@@ -1,0 +1,11 @@
+// Configuracion personalizada de rutas para Sequelize CLI
+
+const path = require('path')
+
+// Exporta la configuracion que usa Sequelize CLI para encontrar los archivos de configuracion, modelos, seeders y migraciones
+module.exports = {
+    config: path.resolve('database/config', 'config.cjs'), // Ruta del archivo de configuracion de la base de datos
+    'models-path': path.resolve('database/models'),
+    'seeders-path': path.resolve('database/seeders'),
+    'migrations-path': path.resolve('database/migrations'),
+}

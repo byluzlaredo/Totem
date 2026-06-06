@@ -1,0 +1,125 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: totem-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-totem}
+      POSTGRES_USER: ${POSTGRES_USER:-totem}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-totem_dev_password_change_me}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    image: totem-backend:latest
+    build:
+      context: ./backend
+    container_name: totem-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PORT: 3000
+      NODE_ENV: ${NODE_ENV:-development}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
+      STORAGE_PROVIDER: ${STORAGE_PROVIDER:-local}
+      LOCAL_UPLOAD_DIR: ${LOCAL_UPLOAD_DIR:-uploads}
+      PUBLIC_FILES_URL: ${PUBLIC_FILES_URL:-/uploads}
+      PGHOST: postgres
+      PGPORT: 5432
+      PGDATABASE: ${POSTGRES_DB:-totem}
+      PGUSER: ${POSTGRES_USER:-totem}
+      PGPASSWORD: ${POSTGRES_PASSWORD:-totem_dev_password_change_me}
+      PG_CONNECTION_TIMEOUT_MS: ${PG_CONNECTION_TIMEOUT_MS:-10000}
+      PG_POOL_MAX: ${PG_POOL_MAX:-5}
+      SEQUELIZE_POOL_MAX: ${SEQUELIZE_POOL_MAX:-5}
+      PGSSL: ${PGSSL:-false}
+      PGSSLMODE: ${PGSSLMODE:-disable}
+      PGSSL_REJECT_UNAUTHORIZED: ${PGSSL_REJECT_UNAUTHORIZED:-true}
+      PGSSL_CA_CERT_PATH: ${PGSSL_CA_CERT_PATH:-}
+      PGSSL_CA_CERT: ${PGSSL_CA_CERT:-}
+      DB_LOGGING: ${DB_LOGGING:-false}
+      DASHBOARD_ASSIGNMENT_EXPIRING_SOON_HOURS: ${DASHBOARD_ASSIGNMENT_EXPIRING_SOON_HOURS:-24}
+      DASHBOARD_SUMMARY_CACHE_TTL_MS: ${DASHBOARD_SUMMARY_CACHE_TTL_MS:-30000}
+      CONTENT_UNAVAILABLE_FILE_CHECK_CACHE_TTL_MS: ${CONTENT_UNAVAILABLE_FILE_CHECK_CACHE_TTL_MS:-45000}
+      CONTENT_FILE_AVAILABILITY_CHECK_CONCURRENCY: ${CONTENT_FILE_AVAILABILITY_CHECK_CONCURRENCY:-8}
+      SESSION_SECRET: ${SESSION_SECRET:-dev_session_secret_change_me}
+      SESSION_COOKIE_NAME: ${SESSION_COOKIE_NAME:-totem.sid}
+      SESSION_MAX_AGE_MS: ${SESSION_MAX_AGE_MS:-28800000}
+      SESSION_TABLE_NAME: ${SESSION_TABLE_NAME:-user_sessions}
+      PASSWORD_SALT_ROUNDS: ${PASSWORD_SALT_ROUNDS:-12}
+      PASSWORD_RESET_TOKEN_TTL_MINUTES: ${PASSWORD_RESET_TOKEN_TTL_MINUTES:-30}
+      PASSWORD_RESET_TOKEN_BYTES: ${PASSWORD_RESET_TOKEN_BYTES:-32}
+      PASSWORD_RESET_FRONTEND_PATH: ${PASSWORD_RESET_FRONTEND_PATH:-/admin/reset-password}
+      SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
+      SMTP_PORT: ${SMTP_PORT:-465}
+      SMTP_SECURE: ${SMTP_SECURE:-true}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_FROM: ${SMTP_FROM:-TOTEM <no-reply@example.local>}
+      EMAIL_APP_NAME: ${EMAIL_APP_NAME:-TOTEM}
+      EMAIL_LOGO_URL: ${EMAIL_LOGO_URL:-}
+      TOTEM_QUESTION_MODE_IDLE_TIMEOUT_SECONDS: ${TOTEM_QUESTION_MODE_IDLE_TIMEOUT_SECONDS:-8}
+      TOTEM_QUESTION_MODE_REACTIVATION_COOLDOWN_SECONDS: ${TOTEM_QUESTION_MODE_REACTIVATION_COOLDOWN_SECONDS:-2}
+      TOTEM_QUESTION_SESSION_IDLE_TIMEOUT_SECONDS: ${TOTEM_QUESTION_SESSION_IDLE_TIMEOUT_SECONDS:-20}
+      TOTEM_QA_SEARCH_MIN_TRIGRAM_SCORE: ${TOTEM_QA_SEARCH_MIN_TRIGRAM_SCORE:-0.18}
+      TOTEM_QA_SEARCH_MIN_COMBINED_SCORE: ${TOTEM_QA_SEARCH_MIN_COMBINED_SCORE:-0.12}
+      TOTEM_QA_SEARCH_FTS_WEIGHT: ${TOTEM_QA_SEARCH_FTS_WEIGHT:-0.72}
+      TOTEM_QA_SEARCH_TRIGRAM_WEIGHT: ${TOTEM_QA_SEARCH_TRIGRAM_WEIGHT:-0.28}
+      TOTEM_QA_MIN_QUERY_WORD_COUNT: ${TOTEM_QA_MIN_QUERY_WORD_COUNT:-3}
+      TOTEM_QA_MIN_QUERY_CHARACTER_COUNT: ${TOTEM_QA_MIN_QUERY_CHARACTER_COUNT:-6}
+      TOTEM_QA_MIN_QUERY_WORD_COVERAGE: ${TOTEM_QA_MIN_QUERY_WORD_COVERAGE:-0.5}
+      TOTEM_QA_MIN_MATCHED_QUESTION_COVERAGE: ${TOTEM_QA_MIN_MATCHED_QUESTION_COVERAGE:-0.6}
+      TOTEM_QA_MIN_WORD_OVERLAP: ${TOTEM_QA_MIN_WORD_OVERLAP:-2}
+      TOTEM_CLIENT_ACCESS_TOKEN_TTL_SECONDS: ${TOTEM_CLIENT_ACCESS_TOKEN_TTL_SECONDS:-900}
+      TOTEM_CLIENT_REFRESH_TOKEN_TTL_SECONDS: ${TOTEM_CLIENT_REFRESH_TOKEN_TTL_SECONDS:-157680000}
+      TOTEM_LINK_CODE_TTL_MINUTES: ${TOTEM_LINK_CODE_TTL_MINUTES:-10}
+      TOTEM_WEATHER_CACHE_TTL_SECONDS: ${TOTEM_WEATHER_CACHE_TTL_SECONDS:-600}
+      TOTEM_WEATHER_REQUEST_TIMEOUT_MS: ${TOTEM_WEATHER_REQUEST_TIMEOUT_MS:-4500}
+      USER_INVITATION_TOKEN_TTL_HOURS: ${USER_INVITATION_TOKEN_TTL_HOURS:-24}
+      USER_INVITATION_TOKEN_BYTES: ${USER_INVITATION_TOKEN_BYTES:-32}
+      USER_INVITATION_FRONTEND_PATH: ${USER_INVITATION_FRONTEND_PATH:-/set-password}
+    ports:
+      - "${BACKEND_PORT:-3000}:3000"
+    volumes:
+      - backend_uploads:/app/uploads
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://127.0.0.1:3000/api/db-test').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))\""]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 5
+
+  frontend:
+    image: totem-frontend:latest
+    build:
+      context: ./frontend
+      args:
+        VITE_APP_NAME: ${VITE_APP_NAME:-TOTEM}
+        VITE_API_URL: ${VITE_API_URL:-}
+        VITE_AUTH_ME_TIMEOUT_MS: ${VITE_AUTH_ME_TIMEOUT_MS:-12000}
+    container_name: totem-frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "${FRONTEND_PORT:-5173}:80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+
+volumes:
+  postgres_data:
+  backend_uploads:

@@ -1,0 +1,1 @@
+Este archivo existe solo para que Git mantenga la carpeta.

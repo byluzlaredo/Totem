@@ -1,0 +1,58 @@
+@import url("https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&display=swap");
+
+@import "tailwindcss";
+
+:root {
+  --font-admin: "Nunito Sans", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  --font-accent: "DM Sans", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  --font-display: "Barlow Condensed", "Nunito Sans", sans-serif;
+
+  --color-red-main: #c6284f;
+  --color-red-button: #d81b4e;
+  --color-red-dark: #a61e3c;
+  --color-bg: #ffffff;
+  --color-card: #ffffff;
+  --color-border: #e0e0e0;
+  --color-text-main: #212121;
+  --color-text-secondary: #757575;
+  --color-sidebar: #111111;
+
+  --totem-bg: #050506;
+  --totem-surface-1: #0d0d12;
+  --totem-surface-2: #14141c;
+  --totem-surface-3: #191a24;
+  --totem-border: #272a39;
+  --totem-border-strong: #31364a;
+  --totem-text-primary: #f5f7ff;
+  --totem-text-secondary: #d4d9ea;
+  --totem-text-muted: #9ca4bf;
+
+  --totem-accent: #ff3b6f;
+  --totem-accent-strong: #d81b4e;
+  --totem-accent-soft: #5e2740;
+  --totem-accent-surface: #2b1720;
+
+  --totem-warning-soft: #594321;
+  --totem-warning-surface: #2f2413;
+  --totem-warning-text: #f9d490;
+
+  --totem-danger-soft: #6f2b39;
+  --totem-danger-surface: #341721;
+  --totem-danger-text: #ffc5d3;
+
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text-main);
+  font-family: var(--font-admin);
+}

@@ -1,0 +1,3 @@
+export const LIST_FILTER_DEBOUNCE_MS = 450;
+export const LIST_SEARCH_MIN_CHARS = 3;
+export const ASSIGNMENT_CATALOG_SEARCH_MIN_CHARS = 3;
